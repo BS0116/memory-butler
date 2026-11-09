@@ -55,6 +55,11 @@ let kStrings: [Lang: [String: String]] = [
         "menu.open": "打开面板…",
         "menu.quick": "快速退出推荐项",
         "menu.purge": "清理缓存（需输入密码）",
+        "menu.gamemode": "游戏模式",
+        "menu.gamemode.on": "开启游戏模式",
+        "menu.gamemode.off": "关闭游戏模式",
+        "menu.gamemode.on.tip": "已开启游戏模式：自动退出推荐项，把内存让给游戏",
+        "menu.gamemode.off.tip": "已关闭游戏模式：恢复普通状态",
         "menu.lang": "语言 / Language",
         "menu.quit": "退出内存管家",
         "menu.status": "可用 %@ ｜ 压缩 %@ ｜ Swap %@",
@@ -101,6 +106,11 @@ let kStrings: [Lang: [String: String]] = [
         "menu.open": "Open Panel…",
         "menu.quick": "Quick Quit Recommended",
         "menu.purge": "Clear Cache (needs password)",
+        "menu.gamemode": "Game Mode",
+        "menu.gamemode.on": "Turn On Game Mode",
+        "menu.gamemode.off": "Turn Off Game Mode",
+        "menu.gamemode.on.tip": "Game Mode on: quitting recommended items to free memory",
+        "menu.gamemode.off.tip": "Game Mode off: back to normal",
         "menu.lang": "语言 / Language",
         "menu.quit": "Quit Memory Butler",
         "menu.status": "Free %@ ｜ Compressed %@ ｜ Swap %@",
@@ -121,6 +131,12 @@ let kStrings: [Lang: [String: String]] = [
 func t(_ key: String) -> String {
     if let v = kStrings[gLang]?[key] { return v }
     return kStrings[.en]?[key] ?? key
+}
+
+/// 游戏模式开关：开启时菜单栏图标带个游戏手柄标记，并自动退出推荐项
+var isGameMode: Bool {
+    get { UserDefaults.standard.bool(forKey: "gameMode") }
+    set { UserDefaults.standard.set(newValue, forKey: "gameMode") }
 }
 
 // MARK: - Basic config
@@ -980,6 +996,15 @@ final class StatusBar: NSObject {
         menu.addItem(infoItem)
         menu.addItem(.separator())
 
+        // 游戏模式开关 / game mode toggle
+        let gmItem = NSMenuItem(title: isGameMode ? t("menu.gamemode.off") : t("menu.gamemode.on"),
+                                action: #selector(toggleGameMode), keyEquivalent: "g")
+        gmItem.target = self
+        gmItem.state = isGameMode ? .on : .off
+        menu.addItem(gmItem)
+
+        menu.addItem(.separator())
+
         let open = NSMenuItem(title: t("menu.open"), action: #selector(openPanel), keyEquivalent: "o")
         open.target = self
         menu.addItem(open)
@@ -1010,6 +1035,7 @@ final class StatusBar: NSObject {
 
         menu.addItem(.separator())
         let quit = NSMenuItem(title: t("menu.quit"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        quit.target = self
         menu.addItem(quit)
 
         item?.menu = menu
@@ -1021,7 +1047,9 @@ final class StatusBar: NSObject {
         else if s.usedRatio > 0.78 { dot = "🟠" }
         else { dot = "🟢" }
         let short = String(format: "%.1fG", Double(s.available) / 1_073_741_824.0)
-        item?.button?.title = "\(dot) \(short)"
+        // 游戏模式开启时图标加手柄标记
+        let gm = isGameMode ? "🎮 " : ""
+        item?.button?.title = "\(gm)\(dot) \(short)"
         infoItem.title = String(format: t("menu.status"), gb(s.available), gb(s.compressed), gb(s.swapUsed))
     }
 
@@ -1037,6 +1065,26 @@ final class StatusBar: NSObject {
     @objc func setEnglish() { switchLanguage(.en) }
 
     @objc func openPanel() { panel.show() }
+
+    @objc func toggleGameMode() {
+        isGameMode = !isGameMode
+        buildMenu()
+        update(sample: readMemory())
+        let msg = isGameMode ? t("menu.gamemode.on.tip") : t("menu.gamemode.off.tip")
+        if isGameMode {
+            // 开启时自动退出推荐项，把内存让给游戏
+            let freed = quickBoost()
+            let alert = NSAlert()
+            alert.messageText = msg
+            alert.informativeText = freed
+            alert.addButton(withTitle: t("btn.ok"))
+            alert.runModal()
+            panel.refreshAll()
+        } else {
+            // 关闭时恢复被退出的应用
+            panel.doRestore()
+        }
+    }
 
     @objc func quickAction() {
         let msg = quickBoost()
@@ -1078,6 +1126,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ n: Notification) {
         panel = PanelController()
         StatusBar.shared.setup(panel: panel)
+        buildMainMenu()
 
         if CommandLine.arguments.contains("--panel") { panel.show() }
 
@@ -1091,6 +1140,67 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             alert.runModal()
             panel.show()
         }
+    }
+
+    /// 主菜单栏：提供标准的 ⌘Q 退出、⌘W 关闭窗口、⌘H 隐藏等快捷键
+    func buildMainMenu() {
+        let mainMenu = NSMenu()
+        NSApp.mainMenu = mainMenu
+
+        // App 菜单（显示名 Memory Butler）
+        let appMenuItem = NSMenuItem()
+        mainMenu.addItem(appMenuItem)
+        let appMenu = NSMenu()
+        appMenuItem.submenu = appMenu
+
+        let appName = "Memory Butler"
+        // 关于
+        let about = NSMenuItem(title: String(format: gLang == .zh ? "关于 %@" : "About %@", appName),
+                               action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
+        about.target = NSApp
+        appMenu.addItem(about)
+        appMenu.addItem(.separator())
+
+        // 隐藏
+        let hide = NSMenuItem(title: gLang == .zh ? "隐藏 \(appName)" : "Hide \(appName)",
+                              action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
+        hide.target = NSApp
+        appMenu.addItem(hide)
+
+        let hideOthers = NSMenuItem(title: gLang == .zh ? "隐藏其他" : "Hide Others",
+                                    action: #selector(NSApplication.hideOtherApplications(_:)), keyEquivalent: "h")
+        hideOthers.keyEquivalentModifierMask = [.command, .option]
+        hideOthers.target = NSApp
+        appMenu.addItem(hideOthers)
+
+        let showAll = NSMenuItem(title: gLang == .zh ? "全部显示" : "Show All",
+                                 action: #selector(NSApplication.unhideAllApplications(_:)), keyEquivalent: "")
+        showAll.target = NSApp
+        appMenu.addItem(showAll)
+
+        appMenu.addItem(.separator())
+        let quit = NSMenuItem(title: String(format: gLang == .zh ? "退出 %@" : "Quit %@", appName),
+                              action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        quit.target = NSApp
+        appMenu.addItem(quit)
+
+        // 窗口菜单：提供 ⌘W 关闭窗口、⌘M 最小化
+        let windowMenuItem = NSMenuItem()
+        mainMenu.addItem(windowMenuItem)
+        let windowMenu = NSMenu(title: gLang == .zh ? "窗口" : "Window")
+        windowMenuItem.submenu = windowMenu
+
+        let close = NSMenuItem(title: gLang == .zh ? "关闭窗口" : "Close Window",
+                               action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
+        close.target = nil
+        windowMenu.addItem(close)
+
+        let minimize = NSMenuItem(title: gLang == .zh ? "最小化" : "Minimize",
+                                  action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
+        minimize.target = nil
+        windowMenu.addItem(minimize)
+
+        NSApp.windowsMenu = windowMenu
     }
 }
 

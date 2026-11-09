@@ -32,8 +32,10 @@
 - 🚀 **退出勾选的应用**：温和退出（等价点红叉，走保存流程）；顽固不退的会先问你，确认后才强退，避免误丢数据
 - ↩️ **恢复我退出的应用**：玩完游戏把退掉的应用全部重新打开（记录会持久化，重启也不丢）
 - 🧹 **清理缓存**：清掉系统文件缓存（和 Memory Cleaner 同原理），但老实说——缓存本来不挡路，长期收益有限，所以只做辅助按钮
+- 🎮 **游戏模式开关**：菜单栏或 ⌘G 一键开/关。开启时自动退出推荐项把内存让给游戏（图标显示 🎮），关闭时自动恢复被退出的应用
 - 🌐 **内置中英双语**：菜单栏「语言 / Language」随时切换，无需重启
 - 🔐 退出系统级后台服务时才需要管理员密码，普通应用完全不需要
+- ⌨️ 标准快捷键：⌘Q 退出、⌘W 关闭窗口、⌘H 隐藏、⌘M 最小化、⌘G 切换游戏模式
 
 ### 📦 安装
 
@@ -95,8 +97,10 @@ launch a game, and bring everything back when you are done.
 - 🚀 **Quit Checked Apps**: gentle quit first (same as clicking the red button, runs the save flow); stubborn apps ask before force-quitting so you never lose work
 - ↩️ **Reopen Closed Apps**: restores everything after gaming (the list survives restarts)
 - 🧹 **Clear Cache**: flushes the file cache (same mechanism as Memory Cleaner) — but honestly, cache doesn't block games, so it's a secondary button, not the main event
+- 🎮 **Game Mode toggle**: turn on/off from the menu bar or ⌘G. Turning it on auto-quits recommended items (icon shows 🎮) and turning it off reopens them
 - 🌐 **Built-in English / 简体中文** switcher in the menu — no restart needed
 - 🔐 Admin password is only ever needed for system-level background services
+- ⌨️ Standard shortcuts: ⌘Q quit, ⌘W close window, ⌘H hide, ⌘M minimize, ⌘G toggle game mode
 
 ### 📦 Install
 
