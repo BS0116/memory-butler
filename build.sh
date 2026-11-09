@@ -37,13 +37,12 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
   <key>CFBundleName</key><string>内存管家</string>
   <key>CFBundleDisplayName</key><string>内存管家</string>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleShortVersionString</key><string>1.1</string>
-  <key>CFBundleVersion</key><string>2</string>
+  <key>CFBundleShortVersionString</key><string>1.2</string>
+  <key>CFBundleVersion</key><string>3</string>
   <key>CFBundleIconFile</key><string>AppIcon</string>
   <key>CFBundleLocalizations</key><array><string>zh-Hans</string><string>en</string></array>
   <key>CFBundleDevelopmentRegion</key><string>zh_CN</string>
   <key>LSMinimumSystemVersion</key><string>12.0</string>
-  <key>LSUIElement</key><true/>
   <key>LSMultipleInstancesProhibited</key><true/>
   <key>NSHighResolutionCapable</key><true/>
   <key>NSHumanReadableCopyright</key><string>内存管家 · 本地工具</string>

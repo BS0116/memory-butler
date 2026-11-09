@@ -26,11 +26,12 @@
 
 ### ✨ 功能
 
-- 🟢🟠🔴 菜单栏实时显示可用内存，红/橙/绿三档提示内存压力
+- 🟢🟠🔴 菜单栏实时显示可用内存，红/橙/绿三档提示内存压力；Dock 里也有图标
 - 📋 面板按内存**从大到小**列出运行中的应用和后台服务（Chrome 的 Helper 子进程自动并入主程序，不重复计数）
-- ✅ 智能预勾选：浏览器、微信/QQ、Docker、网盘同步、照片分析等"开游戏用不着"的程序
-- 🚀 **一键腾内存**：退出勾选项，并报告"可用内存 X → Y，实际多出 Z"
-- ↩️ **一键恢复**：玩完游戏把退掉的应用全部重新打开（记录会持久化，重启也不丢）
+- ☑️ **默认全不勾选**，你自己挑要退的应用；「全选推荐项」一键勾上浏览器、微信/QQ、Docker、网盘同步等重内存程序
+- 🚀 **退出勾选的应用**：温和退出（等价点红叉，走保存流程）；顽固不退的会先问你，确认后才强退，避免误丢数据
+- ↩️ **恢复我退出的应用**：玩完游戏把退掉的应用全部重新打开（记录会持久化，重启也不丢）
+- 🧹 **清理缓存**：清掉系统文件缓存（和 Memory Cleaner 同原理），但老实说——缓存本来不挡路，长期收益有限，所以只做辅助按钮
 - 🌐 **内置中英双语**：菜单栏「语言 / Language」随时切换，无需重启
 - 🔐 退出系统级后台服务时才需要管理员密码，普通应用完全不需要
 
@@ -45,10 +46,12 @@
 ### 🎮 使用流程
 
 ```
-打开面板 → 勾选要退出的程序 → 「一键腾内存」 → 开游戏
+打开面板 → 勾选要退出的应用 → 「退出勾选的应用」 → 开游戏
                                     ↓
           玩完 → 「恢复我退出的应用」 → 一切如初
 ```
+
+> 「清理缓存」按钮可点可不点 —— 它清的只是文件缓存，游戏需要内存时系统本来就会让位，所以它对游戏帮助不大，别把它当主菜。
 
 ### 🔨 从源码构建
 
@@ -63,8 +66,8 @@ bash build.sh        # 需要 Xcode Command Line Tools（免费）：xcode-selec
 ### 💡 诚实的说明
 
 - macOS 的"内存已用 90%"不一定是坏事 —— 系统会把不常用内存压缩起来。真正拖慢游戏的是 **Swap 交换**和**内存压力**，面板里都有显示。
-- 「深度清理缓存」（purge）效果是瞬时的，系统很快会把文件缓存填回来，日常用不到。
-- 退出应用用的是正常退出流程，有未保存的文档会先弹保存提示，不会丢数据。
+- 「清理缓存」（purge）效果是瞬时的，系统很快会把文件缓存填回来，对游戏帮助有限。
+- 退出应用用的是温和退出流程（等价点红叉），有未保存的文档会先弹保存提示；顽固不退的应用会先问你，确认后才强退。
 
 ### 📄 License
 
@@ -86,11 +89,12 @@ launch a game, and bring everything back when you are done.
 
 ### ✨ Features
 
-- 🟢🟠🔴 Live free-memory readout in the menu bar with a 3-level pressure indicator
+- 🟢🟠🔴 Live free-memory readout in the menu bar with a 3-level pressure indicator; also shows in the Dock
 - 📋 Panel lists running apps and background services **largest first** (Chrome helpers are merged into the parent app, no double counting)
-- ✅ Smart pre-selection: browsers, messengers, Docker, cloud-sync clients, photo analysis daemons
-- 🚀 **Free Memory**: quits the checked items and reports "free memory X → Y, that's Z more"
+- ☑️ **Nothing pre-checked** — you pick what to quit; "Select Recommended" checks browsers, messengers, Docker, sync clients in one click
+- 🚀 **Quit Checked Apps**: gentle quit first (same as clicking the red button, runs the save flow); stubborn apps ask before force-quitting so you never lose work
 - ↩️ **Reopen Closed Apps**: restores everything after gaming (the list survives restarts)
+- 🧹 **Clear Cache**: flushes the file cache (same mechanism as Memory Cleaner) — but honestly, cache doesn't block games, so it's a secondary button, not the main event
 - 🌐 **Built-in English / 简体中文** switcher in the menu — no restart needed
 - 🔐 Admin password is only ever needed for system-level background services
 
@@ -106,10 +110,12 @@ launch a game, and bring everything back when you are done.
 ### 🎮 Workflow
 
 ```
-Open panel → check apps to quit → "Free Memory" → play
+Open panel → check apps to quit → "Quit Checked Apps" → play
                                         ↓
         when done → "Reopen Closed Apps" → back to normal
 ```
+
+> "Clear Cache" is optional — it only flushes the file cache, which the system gives up anyway when a game needs memory, so it won't help much. It's a side button, not the main one.
 
 ### 🔨 Build from source
 
@@ -125,8 +131,8 @@ Output: `内存管家.app` (with icon, ad-hoc signed). Headless self-test: `./�
 
 - "90% memory used" on macOS is not necessarily bad — the system compresses inactive memory.
   What actually slows games down is **swap** and **memory pressure**; the panel shows both.
-- "Deep Clean Cache" (purge) is momentary — the system refills the file cache quickly.
-- Apps are quit through the normal quit flow; unsaved documents prompt first. No data loss.
+- "Clear Cache" (purge) is momentary — the system refills the file cache quickly, so it won't help games much.
+- Apps are quit gently (like clicking the red button); unsaved documents prompt first, and stubborn apps ask before force-quitting.
 
 ### 📄 License
 

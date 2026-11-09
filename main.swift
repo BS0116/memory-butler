@@ -29,11 +29,12 @@ let kStrings: [Lang: [String: String]] = [
         "panel.used": "已用 %@ / %@　可用 %@",
         "panel.detail": "App %@　压缩 %@　缓存 %@　Swap %@",
         "section.apps": "正在运行的应用",
-        "section.appsHint": "按内存从大到小，勾选 = 腾内存时退出它",
+        "section.appsHint": "按内存从大到小，勾选要退出的应用",
         "section.daemons": "后台服务",
         "section.daemonsHint": "没有窗口但一直在吃内存的常驻服务",
-        "btn.boost": "一键腾内存",
+        "btn.boost": "退出勾选的应用",
         "btn.restore": "恢复我退出的应用",
+        "btn.purge": "清理缓存",
         "btn.refresh": "刷新列表",
         "btn.selectRec": "全选推荐项",
         "empty.apps": "没有可退出的应用。",
@@ -49,9 +50,11 @@ let kStrings: [Lang: [String: String]] = [
         "banner.adminNeeded": "部分后台服务属于系统进程，需要管理员密码…",
         "banner.noRecords": "还没有记录到被退出的应用。",
         "banner.restored": "已重新打开 %d 个应用。",
+        "banner.purgeDone": "缓存已清理，当前可用 %@。",
+        "banner.purgeFail": "清理缓存需要管理员密码，已取消。",
         "menu.open": "打开面板…",
-        "menu.quick": "快速腾内存（退出推荐项）",
-        "menu.purge": "深度清理缓存（需输入密码）",
+        "menu.quick": "快速退出推荐项",
+        "menu.purge": "清理缓存（需输入密码）",
         "menu.lang": "语言 / Language",
         "menu.quit": "退出内存管家",
         "menu.status": "可用 %@ ｜ 压缩 %@ ｜ Swap %@",
@@ -62,8 +65,8 @@ let kStrings: [Lang: [String: String]] = [
         "alert.purgeOkBody": "当前可用 %@。注意：系统会重新把文件缓存填回来，这一步只让瞬时可用内存变多，长期收益有限。",
         "alert.purgeFail": "清理被取消或失败",
         "alert.purgeFailBody": "需要在系统弹窗里输入管理员密码才能执行。",
-        "welcome.title": "内存管家已在菜单栏运行",
-        "welcome.body": "看屏幕右上角，有一个显示剩余内存的小图标，点它就能打开面板。\n\n用法：勾选要退出的应用 → 点「一键腾内存」→ 开游戏 → 玩完点「恢复我退出的应用」。",
+        "welcome.title": "内存管家已就绪",
+        "welcome.body": "屏幕右上角菜单栏有一个显示剩余内存的小图标，点它能打开面板。\n\n用法：勾选要退出的应用 → 点「退出勾选的应用」→ 开游戏 → 玩完点「恢复我退出的应用」。\n「清理缓存」按钮可以清文件缓存，但长期收益有限。",
         "btn.ok": "好",
         "btn.gotit": "知道了"
     ],
@@ -72,11 +75,12 @@ let kStrings: [Lang: [String: String]] = [
         "panel.used": "Used %@ of %@　%@ free",
         "panel.detail": "App %@　Compressed %@　Cached %@　Swap %@",
         "section.apps": "Running Apps",
-        "section.appsHint": "Largest first — checked apps are quit when you free memory",
+        "section.appsHint": "Largest first — check the apps you want to quit",
         "section.daemons": "Background Services",
         "section.daemonsHint": "Windowless helpers that keep eating memory",
-        "btn.boost": "Free Memory",
+        "btn.boost": "Quit Checked Apps",
         "btn.restore": "Reopen Closed Apps",
+        "btn.purge": "Clear Cache",
         "btn.refresh": "Refresh",
         "btn.selectRec": "Select Recommended",
         "empty.apps": "No apps to quit.",
@@ -92,9 +96,11 @@ let kStrings: [Lang: [String: String]] = [
         "banner.adminNeeded": "Some services run as system processes — admin password required…",
         "banner.noRecords": "No closed apps recorded yet.",
         "banner.restored": "Reopened %d apps.",
+        "banner.purgeDone": "Cache cleared — now %@ free.",
+        "banner.purgeFail": "Clearing cache needs an admin password — cancelled.",
         "menu.open": "Open Panel…",
-        "menu.quick": "Quick Free (quit recommended)",
-        "menu.purge": "Deep Clean Cache (needs password)",
+        "menu.quick": "Quick Quit Recommended",
+        "menu.purge": "Clear Cache (needs password)",
         "menu.lang": "语言 / Language",
         "menu.quit": "Quit Memory Butler",
         "menu.status": "Free %@ ｜ Compressed %@ ｜ Swap %@",
@@ -105,8 +111,8 @@ let kStrings: [Lang: [String: String]] = [
         "alert.purgeOkBody": "Now %@ free. Note: macOS refills the file cache quickly, so this only helps for a short while.",
         "alert.purgeFail": "Cancelled or failed",
         "alert.purgeFailBody": "An admin password is required in the system dialog.",
-        "welcome.title": "Memory Butler is running in the menu bar",
-        "welcome.body": "Look at the top-right of your screen: a small icon shows how much memory is free. Click it to open the panel.\n\nHow to use: check the apps to quit → “Free Memory” → play → “Reopen Closed Apps” when you are done.",
+        "welcome.title": "Memory Butler is ready",
+        "welcome.body": "A small icon in the menu bar (top-right) shows how much memory is free — click it to open the panel.\n\nHow to use: check the apps to quit → “Quit Checked Apps” → play → “Reopen Closed Apps” when done.\n“Clear Cache” flushes the file cache, but its benefit is short-lived.",
         "btn.ok": "OK",
         "btn.gotit": "Got it"
     ]
@@ -553,6 +559,7 @@ final class PanelController: NSObject {
     var banner = NSTextField(labelWithString: "")
     var btnBoost: NSButton!
     var btnRestore: NSButton!
+    var btnPurge: NSButton!
     var btnRefresh: NSButton!
     var btnSelect: NSButton!
     var rows: [RowView] = []
@@ -614,10 +621,11 @@ final class PanelController: NSObject {
 
         btnBoost = makeButton(t("btn.boost"), action: #selector(doBoost), emphasized: true)
         btnRestore = makeButton(t("btn.restore"), action: #selector(doRestore), emphasized: false)
+        btnPurge = makeButton(t("btn.purge"), action: #selector(doPurge), emphasized: false)
         btnRefresh = makeButton(t("btn.refresh"), action: #selector(doRefresh), emphasized: false)
         btnSelect = makeButton(t("btn.selectRec"), action: #selector(doSelectRecommended), emphasized: false)
 
-        let buttons = NSStackView(views: [btnBoost, btnRestore, btnRefresh, btnSelect])
+        let buttons = NSStackView(views: [btnBoost, btnRestore, btnPurge, btnRefresh, btnSelect])
         buttons.orientation = .horizontal
         buttons.spacing = 8
         buttons.translatesAutoresizingMaskIntoConstraints = false
@@ -667,6 +675,7 @@ final class PanelController: NSObject {
         window.title = t("panel.title")
         btnBoost.title = t("btn.boost")
         btnRestore.title = t("btn.restore")
+        btnPurge.title = t("btn.purge")
         btnRefresh.title = t("btn.refresh")
         btnSelect.title = t("btn.selectRec")
         refreshAll()
@@ -687,7 +696,8 @@ final class PanelController: NSObject {
         addSection(t("section.apps"), t("section.appsHint"))
         if apps.isEmpty { addHint(t("empty.apps")) }
         for it in apps {
-            let r = RowView(item: it, checked: it.defaultOn)
+            // 默认不勾选，用户自己挑；只有点「全选推荐项」才会勾上重内存应用
+            let r = RowView(item: it, checked: false)
             rows.append(r)
             stack.addArrangedSubview(r)
             r.leadingAnchor.constraint(equalTo: stack.leadingAnchor).isActive = true
@@ -697,7 +707,7 @@ final class PanelController: NSObject {
         addSection(t("section.daemons"), t("section.daemonsHint"))
         if daemons.isEmpty { addHint(t("empty.daemons")) }
         for it in daemons {
-            let r = RowView(item: it, checked: it.defaultOn)
+            let r = RowView(item: it, checked: false)
             rows.append(r)
             stack.addArrangedSubview(r)
             r.leadingAnchor.constraint(equalTo: stack.leadingAnchor).isActive = true
@@ -785,6 +795,7 @@ final class PanelController: NSObject {
         var estimate: UInt64 = 0
         var fired = 0
         var denied: [pid_t] = []
+        var stubborn: [Item] = []   // 温和退出后仍赖着不走的应用
 
         for it in selected {
             switch it.kind {
@@ -794,13 +805,9 @@ final class PanelController: NSObject {
                     if let path = it.appPath, !quitRecords.contains(where: { $0.path == path }) {
                         quitRecords.append((bid, path))
                     }
+                    // 温和退出：等价于点红色关闭按钮，应用会走正常保存流程
                     if app.terminate() { fired += 1 }
-                    let pid = app.processIdentifier
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                        if let still = NSRunningApplication(processIdentifier: pid), !still.isTerminated {
-                            still.forceTerminate()
-                        }
-                    }
+                    stubborn.append(it)
                 }
             case .daemon:
                 for pid in it.pids {
@@ -821,6 +828,44 @@ final class PanelController: NSObject {
             }
             return
         }
+        // 稍等片刻，检查哪些应用温和退出失败，需要的话再问用户是否强退
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
+            guard let self = self else { return }
+            let stillRunning = stubborn.filter { it in
+                guard let bid = it.bundleID else { return false }
+                return NSRunningApplication.runningApplications(withBundleIdentifier: bid).contains {
+                    !$0.isTerminated
+                }
+            }
+            if stillRunning.isEmpty {
+                self.finishBoost(before: before, estimate: estimate, fired: fired)
+            } else {
+                let names = stillRunning.map { $0.title }.joined(separator: "、")
+                self.askForceQuit(before: before, estimate: estimate, fired: fired,
+                                  items: stillRunning, names: names)
+            }
+        }
+    }
+
+    func askForceQuit(before: MemSample, estimate: UInt64, fired: Int,
+                      items: [Item], names: String) {
+        let alert = NSAlert()
+        let askZh = "以下应用没有正常退出（可能有未保存内容）：\n\n%@\n\n要强制退出它们吗？强制退出可能丢失未保存的数据。"
+        let askEn = "These apps did not quit normally (they may have unsaved work):\n\n%@\n\nForce quit them? This may lose unsaved changes."
+        alert.messageText = gLang == .zh ? "有些应用没退干净" : "Some apps are still running"
+        alert.informativeText = String(format: gLang == .zh ? askZh : askEn, names)
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: gLang == .zh ? "强制退出" : "Force Quit")
+        alert.addButton(withTitle: gLang == .zh ? "算了" : "Leave Them")
+        if alert.runModal() == .alertFirstButtonReturn {
+            for it in items {
+                if let bid = it.bundleID {
+                    NSRunningApplication.runningApplications(withBundleIdentifier: bid)
+                        .filter { !$0.isTerminated }
+                        .forEach { $0.forceTerminate() }
+                }
+            }
+        }
         finishBoost(before: before, estimate: estimate, fired: fired)
     }
 
@@ -835,6 +880,26 @@ final class PanelController: NSObject {
                                              gb(before.available), gb(after.available), mb(real))
             self.banner.textColor = .systemGreen
             self.tick()
+        }
+    }
+
+    @objc func doPurge() {
+        let script = "do shell script \"/usr/sbin/purge\" with administrator privileges"
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else { return }
+            var err: NSDictionary?
+            NSAppleScript(source: script)?.executeAndReturnError(&err)
+            DispatchQueue.main.async {
+                let s = readMemory()
+                if err == nil {
+                    self.banner.stringValue = String(format: t("banner.purgeDone"), gb(s.available))
+                    self.banner.textColor = .systemGreen
+                } else {
+                    self.banner.stringValue = t("banner.purgeFail")
+                    self.banner.textColor = .systemOrange
+                }
+                self.tick()
+            }
         }
     }
 
@@ -1054,5 +1119,6 @@ if let bid = Bundle.main.bundleIdentifier,
 
 let delegate = AppDelegate()
 app.delegate = delegate
-app.setActivationPolicy(.accessory)
+// .regular：Dock 里有图标（用户偏好），同时仍保留菜单栏图标
+app.setActivationPolicy(.regular)
 app.run()
