@@ -58,7 +58,7 @@
 ### 🔨 从源码构建
 
 ```bash
-git clone https://github.com/<你的用户名>/memory-butler.git
+git clone https://github.com/BS0116/memory-butler.git
 cd memory-butler
 bash build.sh        # 需要 Xcode Command Line Tools（免费）：xcode-select --install
 ```
@@ -124,7 +124,7 @@ Open panel → check apps to quit → "Quit Checked Apps" → play
 ### 🔨 Build from source
 
 ```bash
-git clone https://github.com/<your-username>/memory-butler.git
+git clone https://github.com/BS0116/memory-butler.git
 cd memory-butler
 bash build.sh        # requires free Xcode Command Line Tools: xcode-select --install
 ```

@@ -9,3 +9,6 @@ dmgstage/
 
 # 本地部署密钥（不要提交）
 .deploy/
+
+# 本地预览文件（不进仓库）
+github-preview.html
