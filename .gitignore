@@ -1,0 +1,11 @@
+# 构建产物 / build artifacts
+*.app/
+*.dmg
+dmgstage/
+.build/
+
+# macOS
+.DS_Store
+
+# 本地部署密钥（不要提交）
+.deploy/
