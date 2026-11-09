@@ -37,8 +37,8 @@
 
 ### 📦 安装
 
-1. 到 [Releases](../../releases) 下载最新的 `内存管家-x.x.dmg`
-2. 打开 DMG，把 **内存管家** 拖进 **Applications**
+1. 到 [Releases](../../releases) 下载最新的 `Memory Butler-x.x.dmg`
+2. 打开 DMG，把 **Memory Butler** 拖进 **Applications**
 3. 双击运行，看屏幕右上角菜单栏
 
 > 首次运行提示"无法验证开发者"：在应用程序文件夹里 **右键 → 打开 → 打开** 即可（本地自编译软件没有苹果开发者证书，属正常现象）。
@@ -61,7 +61,7 @@ cd memory-butler
 bash build.sh        # 需要 Xcode Command Line Tools（免费）：xcode-select --install
 ```
 
-产物：`内存管家.app`（带图标、ad-hoc 签名）。命令行自检：`./内存管家.app/Contents/MacOS/GameMode --selftest`
+产物：`Memory Butler.app`（带图标、ad-hoc 签名）。命令行自检：`./Memory Butler.app/Contents/MacOS/GameMode --selftest`
 
 ### 💡 诚实的说明
 
@@ -100,8 +100,8 @@ launch a game, and bring everything back when you are done.
 
 ### 📦 Install
 
-1. Grab the latest `内存管家-x.x.dmg` from [Releases](../../releases)
-2. Open the DMG and drag **内存管家** into **Applications**
+1. Grab the latest `Memory Butler-x.x.dmg` from [Releases](../../releases)
+2. Open the DMG and drag **Memory Butler** into **Applications**
 3. Launch it and look at the top-right of your menu bar
 
 > If macOS says the app "can't be verified": right-click the app in /Applications → **Open** → Open again.
@@ -125,7 +125,7 @@ cd memory-butler
 bash build.sh        # requires free Xcode Command Line Tools: xcode-select --install
 ```
 
-Output: `内存管家.app` (with icon, ad-hoc signed). Headless self-test: `./内存管家.app/Contents/MacOS/GameMode --selftest`
+Output: `Memory Butler.app` (with icon, ad-hoc signed). Headless self-test: `./Memory Butler.app/Contents/MacOS/GameMode --selftest`
 
 ### 💡 Honest notes
 

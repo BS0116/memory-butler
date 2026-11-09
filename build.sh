@@ -5,7 +5,7 @@
 set -e
 cd "$(dirname "$0")"
 
-APP="内存管家.app"
+APP="Memory Butler.app"
 BIN="GameMode"
 
 echo "==> 检查编译环境"
@@ -34,8 +34,8 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 <dict>
   <key>CFBundleExecutable</key><string>GameMode</string>
   <key>CFBundleIdentifier</key><string>com.bs0116.gamemode</string>
-  <key>CFBundleName</key><string>内存管家</string>
-  <key>CFBundleDisplayName</key><string>内存管家</string>
+  <key>CFBundleName</key><string>Memory Butler</string>
+  <key>CFBundleDisplayName</key><string>Memory Butler</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>1.2</string>
   <key>CFBundleVersion</key><string>3</string>
@@ -45,7 +45,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
   <key>LSMinimumSystemVersion</key><string>12.0</string>
   <key>LSMultipleInstancesProhibited</key><true/>
   <key>NSHighResolutionCapable</key><true/>
-  <key>NSHumanReadableCopyright</key><string>内存管家 · 本地工具</string>
+  <key>NSHumanReadableCopyright</key><string>Memory Butler · 内存管家</string>
 </dict>
 </plist>
 PLIST

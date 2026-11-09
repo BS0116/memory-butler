@@ -25,7 +25,7 @@ var gLang: Lang = {
 
 let kStrings: [Lang: [String: String]] = [
     .zh: [
-        "panel.title": "内存管家 · 游戏模式",
+        "panel.title": "Memory Butler · 内存管家",
         "panel.used": "已用 %@ / %@　可用 %@",
         "panel.detail": "App %@　压缩 %@　缓存 %@　Swap %@",
         "section.apps": "正在运行的应用",
