@@ -51,10 +51,10 @@ let kStrings: [Lang: [String: String]] = [
         "banner.noRecords": "还没有记录到被退出的应用。",
         "banner.restored": "已重新打开 %d 个应用。",
         "banner.purgeDone": "缓存已清理，当前可用 %@。",
-        "banner.purgeFail": "清理缓存需要管理员密码，已取消。",
+        "banner.purgeFail": "清理缓存失败，请稍后再试。",
         "menu.open": "打开面板…",
         "menu.quick": "快速退出推荐项",
-        "menu.purge": "清理缓存（需输入密码）",
+        "menu.purge": "清理缓存",
         "menu.gamemode": "游戏模式",
         "menu.gamemode.on": "开启游戏模式",
         "menu.gamemode.off": "关闭游戏模式",
@@ -68,8 +68,8 @@ let kStrings: [Lang: [String: String]] = [
         "quick.info": "需要的话可以在面板里点「恢复我退出的应用」。",
         "alert.purgeOk": "缓存已清理",
         "alert.purgeOkBody": "当前可用 %@。注意：系统会重新把文件缓存填回来，这一步只让瞬时可用内存变多，长期收益有限。",
-        "alert.purgeFail": "清理被取消或失败",
-        "alert.purgeFailBody": "需要在系统弹窗里输入管理员密码才能执行。",
+        "alert.purgeFail": "清理失败",
+        "alert.purgeFailBody": "清理缓存没有成功，请稍后再试。",
         "welcome.title": "内存管家已就绪",
         "welcome.body": "屏幕右上角菜单栏有一个显示剩余内存的小图标，点它能打开面板。\n\n用法：勾选要退出的应用 → 点「退出勾选的应用」→ 开游戏 → 玩完点「恢复我退出的应用」。\n「清理缓存」按钮可以清文件缓存，但长期收益有限。",
         "btn.ok": "好",
@@ -102,10 +102,10 @@ let kStrings: [Lang: [String: String]] = [
         "banner.noRecords": "No closed apps recorded yet.",
         "banner.restored": "Reopened %d apps.",
         "banner.purgeDone": "Cache cleared — now %@ free.",
-        "banner.purgeFail": "Clearing cache needs an admin password — cancelled.",
+        "banner.purgeFail": "Clearing cache failed — please try again.",
         "menu.open": "Open Panel…",
         "menu.quick": "Quick Quit Recommended",
-        "menu.purge": "Clear Cache (needs password)",
+        "menu.purge": "Clear Cache",
         "menu.gamemode": "Game Mode",
         "menu.gamemode.on": "Turn On Game Mode",
         "menu.gamemode.off": "Turn Off Game Mode",
@@ -119,8 +119,8 @@ let kStrings: [Lang: [String: String]] = [
         "quick.info": "Use “Reopen Closed Apps” in the panel to bring them back.",
         "alert.purgeOk": "Cache cleared",
         "alert.purgeOkBody": "Now %@ free. Note: macOS refills the file cache quickly, so this only helps for a short while.",
-        "alert.purgeFail": "Cancelled or failed",
-        "alert.purgeFailBody": "An admin password is required in the system dialog.",
+        "alert.purgeFail": "Failed",
+        "alert.purgeFailBody": "Clearing the cache did not succeed — please try again.",
         "welcome.title": "Memory Butler is ready",
         "welcome.body": "A small icon in the menu bar (top-right) shows how much memory is free — click it to open the panel.\n\nHow to use: check the apps to quit → “Quit Checked Apps” → play → “Reopen Closed Apps” when done.\n“Clear Cache” flushes the file cache, but its benefit is short-lived.",
         "btn.ok": "OK",
@@ -195,6 +195,38 @@ func gb(_ bytes: UInt64) -> String {
 func mb(_ bytes: UInt64) -> String {
     let v = Double(bytes) / 1_048_576.0
     return v >= 1024 ? String(format: "%.2f GB", v / 1024.0) : String(format: "%.0f MB", v)
+}
+
+/// 清理缓存：先用 memory_pressure 模拟内存压力触发内核回收（无需密码，Memory Cleaner 同款），
+/// 失败时再兜底尝试 /usr/sbin/purge。
+/// 返回是否执行成功。
+func runPurge() -> Bool {
+    // 方案 B：memory_pressure -S -l critical —— 模拟系统 critical 内存压力，
+    // 让内核主动回收文件缓存和可清除页。普通用户即可调用，无需管理员权限。
+    let mp = Process()
+    mp.executableURL = URL(fileURLWithPath: "/usr/bin/memory_pressure")
+    mp.arguments = ["-S", "-l", "critical"]
+    mp.standardOutput = Pipe()
+    mp.standardError = Pipe()
+    do {
+        try mp.run()
+        mp.waitUntilExit()
+        if mp.terminationStatus == 0 { return true }
+    } catch { /* 落到下面兜底 */ }
+
+    // 兜底：直接调 purge（较新 macOS 可能因权限被拒，但旧系统上仍可用）
+    let p = Process()
+    p.executableURL = URL(fileURLWithPath: "/usr/sbin/purge")
+    p.arguments = []
+    p.standardOutput = Pipe()
+    p.standardError = Pipe()
+    do {
+        try p.run()
+        p.waitUntilExit()
+        return p.terminationStatus == 0
+    } catch {
+        return false
+    }
 }
 
 func readMemory() -> MemSample {
@@ -900,14 +932,12 @@ final class PanelController: NSObject {
     }
 
     @objc func doPurge() {
-        let script = "do shell script \"/usr/sbin/purge\" with administrator privileges"
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
-            var err: NSDictionary?
-            NSAppleScript(source: script)?.executeAndReturnError(&err)
+            let ok = runPurge()
             DispatchQueue.main.async {
                 let s = readMemory()
-                if err == nil {
+                if ok {
                     self.banner.stringValue = String(format: t("banner.purgeDone"), gb(s.available))
                     self.banner.textColor = .systemGreen
                 } else {
@@ -1098,13 +1128,10 @@ final class StatusBar: NSObject {
     }
 
     @objc func purgeCache() {
-        let script = "do shell script \"/usr/sbin/purge\" with administrator privileges"
         DispatchQueue.global(qos: .userInitiated).async {
-            var err: NSDictionary?
-            NSAppleScript(source: script)?.executeAndReturnError(&err)
+            let ok = runPurge()
             DispatchQueue.main.async {
                 let s = readMemory()
-                let ok = err == nil
                 let alert = NSAlert()
                 alert.messageText = ok ? t("alert.purgeOk") : t("alert.purgeFail")
                 alert.informativeText = ok
@@ -1140,6 +1167,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             alert.runModal()
             panel.show()
         }
+    }
+
+    /// 点 Dock 图标（应用已运行时再次点击）→ 打开面板
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        panel.show()
+        return true
+    }
+
+    /// 应用被激活（点 Dock 图标、⌘Tab 切回来等）→ 打开面板
+    func applicationDidBecomeActive(_ notification: Notification) {
+        panel.show()
     }
 
     /// 主菜单栏：提供标准的 ⌘Q 退出、⌘W 关闭窗口、⌘H 隐藏等快捷键
